@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HW Blitz">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f7">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>HW Blitz</title>
+<style>
+:root {
+  --accent: #10B981;
+  --accent-dim: rgba(16,185,129,0.12);
+  --accent-border: rgba(16,185,129,0.25);
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --text: #1c1c1e;
+  --text2: #6c6c70;
+  --text3: #aeaeb2;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.12);
+  --chem: #10B981;
+  --chem-bg: #ecfdf5; --chem-text: #065f46;
+  --hist: #8B5CF6;
+  --hist-bg: #f5f3ff; --hist-text: #4c1d95;
+  --math: #F59E0B;
+  --math-bg: #fffbeb; --math-text: #78350f;
+  --warn-bg: #fff7ed; --warn-b: #fed7aa; --warn-t: #7c2d12;
+  --sat: env(safe-area-inset-top,0px);
+  --sab: env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0a; --surface: #1c1c1e; --card: #2c2c2e;
+    --text: #ffffff; --text2: rgba(235,235,245,.7); --text3: rgba(235,235,245,.4);
+    --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.14);
+    --chem-bg: rgba(16,185,129,.12); --chem-text: #6ee7b7;
+    --hist-bg: rgba(139,92,246,.12); --hist-text: #c4b5fd;
+    --math-bg: rgba(245,158,11,.12); --math-text: #fcd34d;
+    --warn-bg: rgba(234,88,12,.1); --warn-b: rgba(234,88,12,.2); --warn-t: #fed7aa;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{
+  font-family:-apple-system,'SF Pro Display',BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100dvh;
+  padding-top:calc(var(--sat) + 62px);
+  padding-bottom:calc(var(--sab) + 32px);
+  max-width:600px;margin:0 auto;
+}
+
+/* HEADER */
+.hdr{
+  position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:600px;
+  z-index:100;
+  background:rgba(var(--bg-rgb,245,245,247),.85);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:calc(var(--sat) + 12px) 20px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+@media (prefers-color-scheme:dark){.hdr{background:rgba(10,10,10,.85)}}
+.hdr-left{display:flex;flex-direction:column;gap:1px}
+.app-name{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.app-sub{font-size:12px;color:var(--text3)}
+.due-pill{font-size:12px;font-weight:600;padding:5px 12px;border-radius:99px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);white-space:nowrap}
+.notif-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:8px;border-radius:99px;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.notif-btn:active{background:var(--border)}
+.notif-dot{width:8px;height:8px;background:#ef4444;border-radius:50%;position:absolute;top:4px;right:4px;display:none}
+.notif-wrap{position:relative}
+
+/* PROGRESS */
+.prog-section{padding:20px 20px 12px;display:flex;align-items:center;gap:20px}
+.ring-wrap{position:relative;width:100px;height:100px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border2);stroke-width:7}
+.ring-fill{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.ring-n{font-size:24px;font-weight:700;line-height:1}
+.ring-d{font-size:11px;color:var(--text3);margin-top:1px}
+.prog-right{flex:1}
+.prog-title{font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.1}
+.prog-sub{font-size:13px;color:var(--text2);margin-top:4px}
+.meta-row{display:flex;gap:12px;margin-top:12px}
+.meta-chip{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;text-align:center;flex:1}
+.meta-val{font-size:16px;font-weight:700}
+.meta-lbl{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* DAY TABS */
+.tabs-wrap{position:sticky;top:calc(var(--sat) + 62px);z-index:90;padding:0 16px 10px;background:var(--bg)}
+.tabs{display:flex;background:var(--surface);border-radius:13px;padding:4px;gap:3px;border:1px solid var(--border)}
+.tab{flex:1;border:none;background:none;cursor:pointer;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:600;color:var(--text2);transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:inherit}
+.tab.active{background:var(--accent);color:#fff}
+.tab-lbl{font-size:12px;font-weight:700}
+.tab-sub{font-size:10px;opacity:.75}
+
+/* TASK LIST */
+.list{padding:0 16px}
+.sec-head{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:10px 4px 5px}
+.task{
+  background:var(--card);border-radius:13px;margin-bottom:7px;
+  border:1px solid var(--border);cursor:pointer;
+  transition:transform .1s,opacity .15s;
+  overflow:hidden;position:relative;
+  -webkit-user-select:none;user-select:none;
+}
+.task:active{transform:scale(.985);opacity:.85}
+.task.done{opacity:.55}
+.subj-bar{position:absolute;left:0;top:0;bottom:0;width:3.5px}
+.subj-chem{background:var(--chem)} .subj-hist{background:var(--hist)} .subj-math{background:var(--math)}
+.warn-row{display:flex;align-items:flex-start;gap:7px;padding:8px 14px 8px 18px;background:var(--warn-bg);border-bottom:1px solid var(--warn-b);font-size:12px;color:var(--warn-t);line-height:1.4}
+.task-body{display:flex;align-items:flex-start;gap:12px;padding:11px 14px 11px 18px}
+.chk{width:24px;height:24px;border-radius:7px;border:2px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:all .2s}
+.task.done .chk{background:var(--accent);border-color:var(--accent)}
+.chk-svg{display:none;width:14px;height:14px}
+.task.done .chk-svg{display:block}
+.chk-svg path{fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.t-info{flex:1;min-width:0}
+.t-name{font-size:14px;line-height:1.4;color:var(--text)}
+.task.done .t-name{text-decoration:line-through;color:var(--text3)}
+.t-badges{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:5px}
+.badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px}
+.b-chem{background:var(--chem-bg);color:var(--chem-text)}
+.b-hist{background:var(--hist-bg);color:var(--hist-text)}
+.b-math{background:var(--math-bg);color:var(--math-text)}
+.b-pts{background:var(--surface);color:var(--text2);border:1px solid var(--border)}
+.b-time{font-size:11px;color:var(--text3)}
+
+/* NOTIFICATION BANNER */
+.notif-banner{display:flex;align-items:center;gap:12px;margin:0 16px 10px;padding:12px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);cursor:pointer;transition:opacity .15s}
+.notif-banner:active{opacity:.75}
+.nb-icon{font-size:22px;flex-shrink:0}
+.nb-t{font-size:14px;font-weight:600}
+.nb-s{font-size:12px;color:var(--text2);margin-top:1px}
+.nb-arr{color:var(--text3);font-size:18px}
+
+/* CELEBRATE BANNER */
+.cel{display:none;margin:0 16px 10px;padding:12px 14px;background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:12px;text-align:center;font-size:14px;font-weight:600;color:var(--accent)}
+
+/* BOTTOM SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{
+  position:fixed;bottom:0;left:50%;transform:translate(-50%,100%);
+  width:100%;max-width:600px;
+  background:var(--surface);border-radius:20px 20px 0 0;
+  padding:0 20px calc(var(--sab) + 28px);z-index:201;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+}
+.overlay.open .sheet{transform:translate(-50%,0)}
+.sh-handle{width:36px;height:5px;background:var(--border2);border-radius:99px;margin:12px auto 20px}
+.sh-title{font-size:17px;font-weight:700;margin-bottom:16px}
+.sh-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.sh-row:last-of-type{border-bottom:none}
+.sh-lbl{font-size:15px}
+.sh-sub{font-size:13px;color:var(--text2);margin-top:2px}
+.sh-inp{font-size:15px;color:var(--text);background:var(--bg);border:1px solid var(--border2);border-radius:9px;padding:7px 11px;font-family:inherit;-webkit-appearance:none;appearance:none}
+.sh-btn{width:100%;padding:15px;border-radius:13px;border:none;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:12px;font-family:inherit;transition:opacity .15s}
+.sh-btn:active{opacity:.8}
+.sh-btn.sec{background:var(--surface);color:var(--text2);border:1px solid var(--border2);margin-top:8px}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-left">
+    <div class="app-name">HW Blitz ⚡</div>
+    <div class="app-sub" id="hdr-sub">Loading…</div>
+  </div>
+  <div class="due-pill">Due May 29</div>
+  <div class="sync-pill" id="sync-pill" style="font-size:11px;font-weight:600;color:var(--accent);white-space:nowrap;padding:0 4px">⟳</div>
+  <div class="notif-wrap">
+    <button class="notif-btn" onclick="openSheet()" aria-label="Notification settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </button>
+    <div class="notif-dot" id="notif-dot"></div>
+  </div>
+</header>
+
+<section class="prog-section">
+  <div class="ring-wrap">
+    <svg viewBox="0 0 100 100" width="100" height="100">
+      <circle class="ring-bg" cx="50" cy="50" r="43"/>
+      <circle class="ring-fill" id="ring" cx="50" cy="50" r="43"
+        stroke-dasharray="270.18" stroke-dashoffset="270.18"/>
+    </svg>
+    <div class="ring-center">
+      <div class="ring-n" id="ring-n">0</div>
+      <div class="ring-d" id="ring-d">of 24</div>
+    </div>
+  </div>
+  <div class="prog-right">
+    <div class="prog-title" id="prog-title">Let's go!</div>
+    <div class="prog-sub" id="prog-sub">Start with today's tasks</div>
+    <div class="meta-row">
+      <div class="meta-chip"><div class="meta-val" id="m-pts">--</div><div class="meta-lbl">pts left</div></div>
+      <div class="meta-chip"><div class="meta-val" id="m-hrs">--</div><div class="meta-lbl">hrs left</div></div>
+      <div class="meta-chip"><div class="meta-val" id="m-rem">--</div><div class="meta-lbl">tasks left</div></div>
+    </div>
+  </div>
+</section>
+
+<div id="notif-banner"></div>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div class="cel" id="cel">🎉 Day complete — move to the next!</div>
+
+<div class="list" id="list"></div>
+
+<!-- Sheet -->
+<div class="overlay" id="overlay" onclick="closeSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Reminders</div>
+    <div class="sh-row">
+      <div><div class="sh-lbl">Daily reminder time</div><div class="sh-sub">Fires every day until May 29</div></div>
+      <input type="time" class="sh-inp" id="r-time" value="16:00">
+    </div>
+    <div class="sh-row">
+      <div><div class="sh-lbl">Permission status</div><div class="sh-sub" id="sh-status">Not set</div></div>
+    </div>
+    <button class="sh-btn" id="sh-btn">Enable notifications</button>
+    <button class="sh-btn sec" onclick="closeSheet()">Done</button>
+  </div>
+</div>
+
+<script>
+/* ── Supabase config ── */
+const SB_URL='https://rugjqbmxqnfwfggducwe.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1Z2pxYm14cW5md2ZnZ2R1Y3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NjU2ODYsImV4cCI6MjA5NTM0MTY4Nn0.VEWAAYENppUAZFNmIcEkLvuBKch2KQuNbkdvLjw6Z40';
+
+/* shared user key — same key on every device = shared progress */
+const USER_ID='hw_blitz_shared';
+
+async function sbFetch(path,opts={}){
+  const res=await fetch(SB_URL+path,{
+    headers:{
+      'apikey':SB_KEY,
+      'Authorization':'Bearer '+SB_KEY,
+      'Content-Type':'application/json',
+      'Prefer':'resolution=merge-duplicates',
+      ...opts.headers
+    },...opts
+  });
+  return res;
+}
+
+function syncStatus(msg,ok=true){
+  const el=document.getElementById('sync-pill');
+  if(!el)return;
+  el.textContent=msg;
+  el.style.color=ok?'var(--accent)':'#f59e0b';
+}
+
+async function loadFromSupabase(){
+  try{
+    syncStatus('⟳ Syncing…');
+    const res=await sbFetch('/rest/v1/hw_blitz_state?user_id=eq.'+USER_ID+'&select=state');
+    if(res.ok){
+      const data=await res.json();
+      if(data&&data[0]&&data[0].state){
+        const remote=data[0].state;
+        /* merge: remote wins over local for any key that exists remotely */
+        const local=JSON.parse(localStorage.getItem('hwb2')||'{}');
+        const merged={...local,...remote};
+        st=merged;
+        localStorage.setItem('hwb2',JSON.stringify(st));
+        syncStatus('✓ Synced');
+      }else{
+        syncStatus('✓ Online');
+      }
+    }else{
+      syncStatus('⚠ Offline',false);
+    }
+  }catch(e){
+    syncStatus('⚠ Offline',false);
+  }
+}
+
+let saveTimer=null;
+async function saveToSupabase(){
+  try{
+    await sbFetch('/rest/v1/hw_blitz_state',{
+      method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({user_id:USER_ID,state:st,updated_at:new Date().toISOString()})
+    });
+    syncStatus('✓ Saved');
+  }catch(e){
+    syncStatus('⚠ Not saved',false);
+  }
+}
+
+const T=[
+  {day:0,id:'h1',s:'hist',n:'Notes on Post WW2 & Justice — slides, article + reflection',p:10,m:35},
+  {day:0,id:'h2',s:'hist',n:'Justice Case Study: Nanking Massacre — text excerpts & Venn diagram',p:10,m:25,w:'In-class form — ask Mrs. McCauley if you can still submit it.'},
+  {day:0,id:'c1',s:'chem',n:'Science Starters — blue',p:6,m:15},
+  {day:0,id:'c2',s:'chem',n:'Science Start for Unit 7 Reactions',p:6,m:15},
+  {day:0,id:'c3',s:'chem',n:'Read & answer questions — Heartburn (LBC)',p:6,m:20},
+  {day:0,id:'c4',s:'chem',n:'Pass the Proton',p:6,m:20},
+  {day:0,id:'c5',s:'chem',n:'Reading guide ck-12 Reactions — read, notes & answer questions',p:6,m:25},
+  {day:1,id:'h3',s:'hist',n:'CNN Cold War Series Ep. 12 (MAD) reflection',p:10,m:25,w:'Get the reflection form from Mrs. McCauley before starting.'},
+  {day:1,id:'c6',s:'chem',n:'Ionic Bonding Mastery Check',p:15,m:45},
+  {day:1,id:'c7',s:'chem',n:'Mass and Change Lab — CER write-up',p:10,m:40},
+  {day:1,id:'c8',s:'chem',n:'Modeling Balancing Equations',p:10,m:30},
+  {day:1,id:'c9',s:'chem',n:'Al and Blue Solution Summary',p:10,m:25},
+  {day:1,id:'c10',s:'chem',n:'ATOM INVENTORY — Balancing Chemical Equations',p:10,m:25},
+  {day:1,id:'c11',s:'chem',n:'Types of Chemical Reactions Video Lab',p:10,m:25},
+  {day:1,id:'m1',s:'math',n:'Math missing assignments — get to 38 completed for the A',p:0,m:60,w:'Start with the fastest problems to hit 38 quickly.'},
+  {day:2,id:'c12',s:'chem',n:'Bond Energy Worksheet',p:10,m:25},
+  {day:2,id:'c13',s:'chem',n:'Make-Break Bond Enthalpy Worksheet',p:10,m:30},
+  {day:2,id:'c14',s:'chem',n:'Mole Ratio Inquiry Lab',p:10,m:35},
+  {day:2,id:'c15',s:'chem',n:'BCA Table — Mole to Mole',p:10,m:25},
+  {day:2,id:'c16',s:'chem',n:'Mastery Check Stoichiometry 25-26',p:8,m:40},
+  {day:2,id:'c17',s:'chem',n:'Solutions & Molarity Notes',p:10,m:25},
+  {day:2,id:'c18',s:'chem',n:'Investigating the pH Scale 25-26',p:10,m:25},
+  {day:2,id:'c19',s:'chem',n:'Isotope Math',p:10,m:25},
+  {day:2,id:'c20',s:'chem',n:'Half-Life Data & Graph',p:10,m:30},
+];
+const DAY_NAMES=['Today · 5/26','May 27','May 28'];
+const SL={chem:'Chem',hist:'History',math:'Math'};
+const SO=['hist','math','chem'];
+
+let st=JSON.parse(localStorage.getItem('hwb2')||'{}');
+let day=0;
+
+function save(){
+  localStorage.setItem('hwb2',JSON.stringify(st));
+  syncStatus('↑ Saving…');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveToSupabase,600);
+}
+function toggle(id){st[id]=!st[id];save();render();checkCel()}
+
+function done(){return T.filter(t=>st[t.id]).length}
+function total(){return T.length}
+function pts(){return T.filter(t=>!st[t.id]&&t.p>0).reduce((a,t)=>a+t.p,0)}
+function hrs(){return Math.round(T.filter(t=>!st[t.id]).reduce((a,t)=>a+t.m,0)/60*10)/10}
+
+function updateProgress(){
+  const d=done(),tot=total(),pct=d/tot;
+  const circ=2*Math.PI*43;
+  document.getElementById('ring').style.strokeDashoffset=circ*(1-pct);
+  document.getElementById('ring-n').textContent=d;
+  document.getElementById('ring-d').textContent='of '+tot;
+  document.getElementById('m-pts').textContent=pts();
+  document.getElementById('m-hrs').textContent=hrs()<1?'<1':hrs();
+  document.getElementById('m-rem').textContent=tot-d;
+  const pct100=Math.round(pct*100);
+  document.getElementById('prog-title').textContent=
+    pct100===0?'Let\'s go!':pct100===100?'All done! 🎉':pct100+'% done';
+  document.getElementById('prog-sub').textContent=
+    pct100===100?'Everything\'s turned in — you crushed it':
+    `${tot-d} tasks · ~${hrs()} hrs left`;
+  document.getElementById('hdr-sub').textContent=`${d}/${tot} tasks · due May 29`;
+}
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML=DAY_NAMES.map((l,i)=>{
+    const left=T.filter(t=>t.day===i&&!st[t.id]).length;
+    return`<button class="tab${day===i?' active':''}" onclick="switchDay(${i})">
+      <span class="tab-lbl">${l}</span>
+      <span class="tab-sub">${left===0?'✓ done':left+' left'}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderList(){
+  const tasks=T.filter(t=>t.day===day);
+  const subjs=SO.filter(s=>tasks.some(t=>t.s===s));
+  let h='';
+  subjs.forEach(s=>{
+    h+=`<div class="sec-head">${SL[s]}</div>`;
+    tasks.filter(t=>t.s===s).forEach(t=>{
+      h+=`<div class="task${st[t.id]?' done':''}" onclick="toggle('${t.id}')">
+        <div class="subj-bar subj-${t.s}"></div>
+        ${t.w?`<div class="warn-row"><span>⚠️</span><span>${t.w}</span></div>`:''}
+        <div class="task-body">
+          <div class="chk">
+            <svg class="chk-svg" viewBox="0 0 14 14"><path d="M2 7 L5.5 10.5 L12 3"/></svg>
+          </div>
+          <div class="t-info">
+            <div class="t-name">${t.n}</div>
+            <div class="t-badges">
+              <span class="badge b-${t.s}">${SL[t.s]}</span>
+              ${t.p>0?`<span class="badge b-pts">${t.p} pts</span>`:''}
+              <span class="b-time">~${t.m} min</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('list').innerHTML=h;
+}
+
+function checkCel(){
+  const tasks=T.filter(t=>t.day===day);
+  const all=tasks.every(t=>st[t.id]);
+  document.getElementById('cel').style.display=all?'block':'none';
+  if(all&&Notification.permission==='granted'){
+    notify('Day complete! 🎉',`All ${DAY_NAMES[day]} tasks done. Keep going!`);
+  }
+}
+
+function render(){updateProgress();renderTabs();renderList()}
+
+function switchDay(d){
+  day=d;render();checkCel();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* Notifications */
+async function registerSW(){
+  if('serviceWorker' in navigator){
+    try{await navigator.serviceWorker.register('./sw.js')}catch(e){}
+  }
+}
+
+function notify(title,body){
+  if(Notification.permission!=='granted')return;
+  if(navigator.serviceWorker.controller){
+    navigator.serviceWorker.controller.postMessage({type:'NOTIFY',title,body});
+  }else{
+    new Notification(title,{body,icon:'./icon.svg'});
+  }
+}
+
+function scheduleDaily(){
+  const t=document.getElementById('r-time').value||'16:00';
+  localStorage.setItem('hw_t',t);
+  const[h,m]=t.split(':').map(Number);
+  const now=new Date(),tgt=new Date();
+  tgt.setHours(h,m,0,0);
+  if(tgt<=now)tgt.setDate(tgt.getDate()+1);
+  const delay=tgt-now;
+  const left=T.filter(t=>!st[t.id]).length;
+  if(navigator.serviceWorker.controller){
+    navigator.serviceWorker.controller.postMessage({
+      type:'SCHEDULE',delay,
+      title:'HW Blitz ⚡',
+      body:`${left} tasks left — due May 29!`
+    });
+  }
+}
+
+async function reqNotif(){
+  const p=await Notification.requestPermission();
+  updateNotifUI();
+  if(p==='granted'){scheduleDaily();closeSheet()}
+}
+
+function updateNotifUI(){
+  const p=Notification.permission;
+  const stat=document.getElementById('sh-status');
+  const btn=document.getElementById('sh-btn');
+  const dot=document.getElementById('notif-dot');
+  const banner=document.getElementById('notif-banner');
+  if(p==='granted'){
+    stat.textContent='✓ Enabled';
+    btn.textContent='Save reminder time';
+    btn.onclick=()=>{scheduleDaily();closeSheet()};
+    dot.style.display='none';
+    banner.innerHTML='';
+  }else if(p==='denied'){
+    stat.textContent='Blocked — enable in Settings → Safari → Notifications';
+    btn.textContent='How to enable';
+    btn.onclick=()=>alert('On iPhone: Settings → Safari → Advanced → Website Data\nOr Settings → Notifications → Safari → Allow.');
+    dot.style.display='block';
+    showBanner();
+  }else{
+    stat.textContent='Not enabled yet';
+    btn.textContent='Enable notifications';
+    btn.onclick=reqNotif;
+    dot.style.display='block';
+    showBanner();
+  }
+}
+
+function showBanner(){
+  if(Notification.permission==='granted')return;
+  document.getElementById('notif-banner').innerHTML=
+    `<div class="notif-banner" onclick="openSheet()">
+      <div class="nb-icon">🔔</div>
+      <div style="flex:1"><div class="nb-t">Enable daily reminders</div><div class="nb-s">Get nudged until May 29</div></div>
+      <div class="nb-arr">›</div>
+    </div>`;
+}
+
+function openSheet(){
+  const saved=localStorage.getItem('hw_t');
+  if(saved)document.getElementById('r-time').value=saved;
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSheet(){document.getElementById('overlay').classList.remove('open')}
+
+function autoDay(){
+  const start=new Date('2026-05-26T00:00:00');
+  const diff=Math.floor((Date.now()-start)/(864e5));
+  return Math.max(0,Math.min(2,diff));
+}
+
+registerSW();
+day=autoDay();
+render();
+checkCel();
+updateNotifUI();
+if(Notification.permission==='granted'){
+  const saved=localStorage.getItem('hw_t');
+  if(saved)scheduleDaily();
+}
+/* pull latest state from Supabase, then re-render */
+loadFromSupabase().then(()=>{render();checkCel()});
+</script>
+</body>
+</html>
